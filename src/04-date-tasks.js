@@ -76,8 +76,27 @@ function isLeapYear(date) {
  *    Date(2000,1,1,10,0,0),  Date(2000,1,1,10,0,0,250)     => "00:00:00.250"
  *    Date(2000,1,1,10,0,0),  Date(2000,1,1,15,20,10,453)   => "05:20:10.453"
  */
-function timeSpanToString(/* startDate, endDate */) {
-  throw new Error('Not implemented');
+function timeSpanToString(startDate, endDate) {
+  const myTime = endDate.getTime() - startDate.getTime();
+  let ms = myTime % 1000;
+  const sec = ((myTime - ms) / (1000)) % 60;
+  const min = ((myTime - ms - sec) / (60 * 1000)) % 60;
+  const hour = ((myTime - ms - sec - min) / (60 * 60 * 1000)) % 60;
+
+  if (ms < 100) {
+    ms = `00${ms}`;
+  } else if (ms < 10) {
+    ms = `0${ms}`;
+  }
+
+  const addZero = (number) => {
+    if (number < 10) {
+      return `0${Math.floor(number)}`;
+    }
+    return Math.floor(number);
+  };
+
+  return `${addZero(hour)}:${addZero(min)}:${addZero(sec)}.${ms}`;
 }
 
 
@@ -97,8 +116,23 @@ function timeSpanToString(/* startDate, endDate */) {
  *    Date.UTC(2016,3,5,18, 0) => Math.PI
  *    Date.UTC(2016,3,5,21, 0) => Math.PI/2
  */
-function angleBetweenClockHands(/* date */) {
-  throw new Error('Not implemented');
+function angleBetweenClockHands(date) {
+  const getHour = () => {
+    if (date.getUTCHours() < 12) {
+      return date.getUTCHours();
+    }
+    return date.getUTCHours() % 12;
+  };
+
+  const hours = getHour();
+  const min = date.getUTCMinutes();
+  let angle = Math.abs(0.5 * (hours * 60 - min * 11));
+
+  if (angle > 180) {
+    angle = 360 - angle;
+  }
+
+  return (angle * Math.PI) / 180;
 }
 
 
