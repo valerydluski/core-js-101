@@ -432,8 +432,23 @@ function getMatrixProduct(/* m1, m2 */) {
  *    [    ,   ,    ]]
  *
  */
-function evaluateTicTacToePosition(/* position */) {
-  throw new Error('Not implemented');
+function evaluateTicTacToePosition(position) {
+  const isCombo = (char) => {
+    if ((position[0][0] === char && position[0][1] === char && position[0][2] === char)
+      || (position[1][0] === char && position[1][1] === char && position[1][2] === char)
+      || (position[2][0] === char && position[2][1] === char && position[2][2] === char)
+      || (position[0][0] === char && position[1][0] === char && position[2][0] === char)
+      || (position[1][1] === char && position[0][1] === char && position[2][1] === char)
+      || (position[0][2] === char && position[1][2] === char && position[2][2] === char)
+      || (position[0][0] === char && position[1][1] === char && position[2][2] === char)
+      || (position[0][2] === char && position[1][1] === char && position[2][0] === char)) {
+      return true;
+    }
+    return false;
+  };
+  if (isCombo('X')) return 'X';
+  if (isCombo('0')) return '0';
+  return undefined;
 }
 
 
