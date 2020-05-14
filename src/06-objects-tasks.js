@@ -114,48 +114,110 @@ function fromJSON(proto, json) {
  *
  *  For more examples see unit tests.
  */
+const combinators = /\s|\+|~|>/;
+const createElement = (selector, value) => `${selector}${value}`;
+const creareId = (selector, value) => `${selector}#${value}`;
+const creareClass = (selector, value) => `${selector}.${value}`;
+const createAttr = (selector, value) => `${selector}[${value}]`;
+const createPseudoClass = (selector, value) => `${selector}:${value}`;
+const creaetePseudoElement = (selector, value) => `${selector}::${value}`;
+const doCombinator = (selector1, combinator, selector2) => `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+const createError = (helper, value) => {
+  if (value.match(/element|id|pseudo-element/) && new RegExp(`${value}`).test(helper)) {
+    const err = 'Element, id and pseudo-element should not occur more then one time inside the selector';
+    throw new Error(err);
+  } else {
+    return `${helper}${value}`;
+  }
+};
+
+const combinatorError = (combinator) => {
+  if (!combinators.test(combinator)) {
+    const err = 'Combinator parsing error! Only " ", +, ~, > combinators are allowed to use';
+    throw new Error(err);
+  }
+};
+
+const orderError = () => {
+  const err = 'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element';
+  throw new Error(err);
+};
 
 const cssSelectorBuilder = {
   selector: '',
+  helper: '',
+  order: 0,
   element(value) {
-    this.selector += `${value}`;
+    const obj = Object.create(cssSelectorBuilder);
+    obj.helper = createError(this.helper, 'element');
+    this.orderCheck(0);
+    obj.order = 0;
+    obj.selector = createElement(this.selector, value);
+    return obj;
   },
 
   id(value) {
-    this.selector += `#${value}`;
-    return this;
+    const obj = Object.create(cssSelectorBuilder);
+    obj.helper = createError(this.helper, 'id');
+    this.orderCheck(1);
+    obj.order = 1;
+    obj.selector = creareId(this.selector, value);
+    return obj;
   },
 
   class(value) {
-    this.selector += `.${value}`;
-    return this;
+    const obj = Object.create(cssSelectorBuilder);
+    obj.helper = createError(this.helper, 'class');
+    this.orderCheck(2);
+    obj.order = 2;
+    obj.selector = creareClass(this.selector, value);
+    return obj;
   },
 
   attr(value) {
-    this.selector += `[${value}]`;
-    return this;
+    const obj = Object.create(cssSelectorBuilder);
+    obj.helper = createError(this.helper, 'attr');
+    this.orderCheck(3);
+    obj.order = 3;
+    obj.selector = createAttr(this.selector, value);
+    return obj;
   },
 
   pseudoClass(value) {
-    this.selector += `:${value}`;
-    return this;
+    const obj = Object.create(cssSelectorBuilder);
+    obj.helper = createError(this.helper, 'pseudo-class');
+    this.orderCheck(4);
+    obj.order = 4;
+    obj.selector = createPseudoClass(this.selector, value);
+    return obj;
   },
 
   pseudoElement(value) {
-    this.selector += `::${value}`;
-    return this;
+    const obj = Object.create(cssSelectorBuilder);
+    obj.helper = createError(this.helper, 'pseudo-element');
+    this.orderCheck(5);
+    obj.order = 5;
+    obj.selector = creaetePseudoElement(this.selector, value);
+    return obj;
   },
 
   combine(selector1, combinator, selector2) {
-    this.selector += `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
-    return this;
+    combinatorError(combinator);
+    const obj = Object.create(cssSelectorBuilder);
+    obj.selector = doCombinator(selector1, combinator, selector2);
+    return obj;
   },
 
   stringify() {
-    return this.selector.toString();
+    return this.selector;
+  },
+
+  orderCheck(order) {
+    if (order < this.order) {
+      orderError();
+    }
   },
 };
-
 
 module.exports = {
   Rectangle,
